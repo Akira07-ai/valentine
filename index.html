@@ -25,51 +25,17 @@
       overflow: hidden;
     }
 
-    /* Love Letter */
-    #love-letter {
+    /* Love Notes (Falling) */
+    .love-note {
       position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 300px;
-      height: 400px;
-      background: url('assets/love-letter.webp') no-repeat center center;
-      background-size: cover;
-      display: none;
-      padding: 20px;
-      box-shadow: 0 0 20px rgba(255, 105, 180, 0.8);
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    /* Message Styling */
-    #love-message {
-      font-size: 18px;
-      color: #5a3e36;
-      font-weight: bold;
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
-      max-width: 80%;
-    }
-
-    /* Falling Notes */
-    .falling-note {
-      position: absolute;
-      width: 50px;
-      height: 50px;
+      width: 100px;
+      height: 80px;
       background: url('assets/love-note.webp') no-repeat center center;
-      background-size: contain;
+      background-size: cover;
       cursor: pointer;
-      animation: fall linear infinite;
     }
 
-    @keyframes fall {
-      from { transform: translateY(-10vh); opacity: 1; }
-      to { transform: translateY(100vh); opacity: 0; }
-    }
-
-    /* Love Note Popup */
+    /* Love Message Popup */
     #popup {
       position: fixed;
       top: 50%;
@@ -79,10 +45,23 @@
       color: #5a3e36;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 0 20px rgba(255, 105, 180, 0.8);
+      font-size: 20px;
+      text-align: center;
       display: none;
-      font-size: 18px;
-      font-weight: bold;
+    }
+
+    /* Love Letter */
+    #love-letter {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: url('assets/love-letter.webp') no-repeat center center;
+      background-size: contain;
+      width: 300px;
+      height: 400px;
+      display: none;
     }
   </style>
 </head>
@@ -91,18 +70,19 @@
   <div id="scene">
     <!-- 3D Heart Container -->
     <div id="heart-container"></div>
+    
+    <!-- Falling Love Notes Container -->
+    <div id="notes-container"></div>
 
-    <!-- Love Letter -->
-    <div id="love-letter">
-      <p id="love-message">My Dearest, You are the most amazing person in my life. Happy Valentine's Day! 💖</p>
-    </div>
-
-    <!-- Love Note Popup -->
+    <!-- Love Message Popup -->
     <div id="popup"></div>
+    
+    <!-- Love Letter -->
+    <div id="love-letter"></div>
   </div>
 
   <!-- Three.js and GLTFLoader -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.146/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.146/examples/js/loaders/GLTFLoader.js"></script>
   <script>
     // Three.js Scene Setup
@@ -121,12 +101,28 @@
     const loader = new THREE.GLTFLoader();
     let heart;
     loader.load(
-      'assets/heart.glb', // Updated GLB path
+      'assets/heart.glb',
       (gltf) => {
         heart = gltf.scene;
-        heart.scale.set(0.5, 0.5, 0.5); // Adjust size
+        heart.scale.set(0.5, 0.5, 0.5);
         heart.position.set(0, 0, 0);
         scene.add(heart);
+      },
+      undefined,
+      (error) => {
+        console.error('Error loading 3D heart model:', error);
+      }
+    );
+
+    // Load Cupid's Bow Model
+    let bow;
+    loader.load(
+      'assets/cupid-bow.glb',
+      (gltf) => {
+        bow = gltf.scene;
+        bow.scale.set(0.3, 0.3, 0.3);
+        bow.position.set(-2, 0, 0);
+        scene.add(bow);
       }
     );
 
@@ -137,34 +133,55 @@
     }
     animate();
 
-    // Generate Falling Notes
+    // Falling Love Notes
     function createFallingNote() {
-      const note = document.createElement("div");
-      note.classList.add("falling-note");
-      note.style.left = Math.random() * 100 + "vw";
-      note.style.animationDuration = (Math.random() * 5 + 3) + "s";
-      note.addEventListener("click", showRandomMessage);
-      document.body.appendChild(note);
-      setTimeout(() => note.remove(), 8000);
+      const note = document.createElement('div');
+      note.classList.add('love-note');
+      note.style.left = Math.random() * window.innerWidth + 'px';
+      document.getElementById('notes-container').appendChild(note);
+
+      let pos = -100;
+      const fall = setInterval(() => {
+        if (pos > window.innerHeight) {
+          clearInterval(fall);
+          note.remove();
+        } else {
+          pos += 1.5;
+          note.style.top = pos + 'px';
+        }
+      }, 25);
+
+      note.addEventListener('click', () => {
+        showPopup();
+      });
     }
 
-    setInterval(createFallingNote, 1000);
+    function startFallingNotes() {
+      setInterval(createFallingNote, 3000);
+    }
+    startFallingNotes();
 
-    // Love Messages
+    // Random Love Messages
     const messages = [
-      "I love you! 💖",
-      "You are my universe! 🌌",
-      "Forever in my heart! ❤️",
-      "You make my world magical! ✨",
-      "Every moment with you is a treasure! 💕"
+      "I love you! ❤️", "You're my everything! 💖", "You make my world magical! ✨", "Forever and always! 💕", "You're my universe! 🌌"
     ];
 
-    function showRandomMessage(event) {
-      const popup = document.getElementById("popup");
+    function showPopup() {
+      const popup = document.getElementById('popup');
       popup.textContent = messages[Math.floor(Math.random() * messages.length)];
-      popup.style.display = "block";
-      setTimeout(() => popup.style.display = "none", 2000);
+      popup.style.display = 'block';
+      setTimeout(() => {
+        popup.style.display = 'none';
+      }, 2000);
     }
+
+    // Cupid's Arrow Hits the Heart
+    document.addEventListener('click', () => {
+      document.getElementById('love-letter').style.display = 'block';
+      setTimeout(() => {
+        document.getElementById('love-letter').style.display = 'none';
+      }, 4000);
+    });
   </script>
 </body>
 </html>
