@@ -114,25 +114,6 @@
       }
     );
 
-    // Load Cupid's Bow Model
-    let bow;
-    loader.load(
-      'assets/cupid-bow.glb',
-      (gltf) => {
-        bow = gltf.scene;
-        bow.scale.set(0.3, 0.3, 0.3);
-        bow.position.set(-2, 0, 0);
-        scene.add(bow);
-      }
-    );
-
-    // Render Loop
-    function animate() {
-      requestAnimationFrame(animate);
-      renderer.render(scene, camera);
-    }
-    animate();
-
     // Falling Love Notes
     function createFallingNote() {
       const note = document.createElement('div');
@@ -146,18 +127,18 @@
           clearInterval(fall);
           note.remove();
         } else {
-          pos += 1.5;
+          pos += 2;
           note.style.top = pos + 'px';
         }
-      }, 25);
+      }, 20);
 
       note.addEventListener('click', () => {
-        showPopup();
+        showPopup(note);
       });
     }
 
     function startFallingNotes() {
-      setInterval(createFallingNote, 3000);
+      setInterval(createFallingNote, 2000);
     }
     startFallingNotes();
 
@@ -166,17 +147,19 @@
       "I love you! ❤️", "You're my everything! 💖", "You make my world magical! ✨", "Forever and always! 💕", "You're my universe! 🌌"
     ];
 
-    function showPopup() {
+    function showPopup(note) {
       const popup = document.getElementById('popup');
       popup.textContent = messages[Math.floor(Math.random() * messages.length)];
       popup.style.display = 'block';
       setTimeout(() => {
         popup.style.display = 'none';
+        note.remove();
       }, 2000);
     }
 
     // Cupid's Arrow Hits the Heart
-    document.addEventListener('click', () => {
+    document.addEventListener('click', (event) => {
+      if (event.target.classList.contains('love-note')) return;
       document.getElementById('love-letter').style.display = 'block';
       setTimeout(() => {
         document.getElementById('love-letter').style.display = 'none';
