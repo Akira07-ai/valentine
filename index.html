@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>💖 Valentine’s 3D Fantasy Scene 💖</title>
   <style>
-    /* General Styles */
     body, html {
       margin: 0;
       padding: 0;
@@ -15,7 +14,6 @@
       color: #fff;
     }
 
-    /* Main Scene */
     #scene {
       position: relative;
       width: 100%;
@@ -25,7 +23,6 @@
       overflow: hidden;
     }
 
-    /* Love Notes (Falling) */
     .love-note {
       position: absolute;
       width: 100px;
@@ -35,7 +32,6 @@
       cursor: pointer;
     }
 
-    /* Love Message Popup */
     #popup {
       position: fixed;
       top: 50%;
@@ -51,7 +47,6 @@
       display: none;
     }
 
-    /* Love Letter */
     #love-letter {
       position: fixed;
       top: 50%;
@@ -62,59 +57,58 @@
       width: 300px;
       height: 400px;
       display: none;
+      text-align: center;
+      font-size: 18px;
+      color: white;
+      padding: 20px;
     }
   </style>
 </head>
 <body>
-  <!-- Main Scene -->
   <div id="scene">
-    <!-- 3D Heart Container -->
     <div id="heart-container"></div>
-    
-    <!-- Falling Love Notes Container -->
+    <div id="bow-container"></div>
     <div id="notes-container"></div>
-
-    <!-- Love Message Popup -->
     <div id="popup"></div>
-    
-    <!-- Love Letter -->
     <div id="love-letter"></div>
   </div>
 
-  <!-- Three.js and GLTFLoader -->
-  <script src="https://cdn.jsdelivr.net/npm/three@0.146/build/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.146/examples/js/loaders/GLTFLoader.js"></script>
   <script>
-    // Three.js Scene Setup
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     const renderer = new THREE.WebGLRenderer({ alpha: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('heart-container').appendChild(renderer.domElement);
 
-    // Lighting
     const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(5, 5, 5).normalize();
     scene.add(light);
 
-    // Load Heart Model
     const loader = new THREE.GLTFLoader();
-    let heart;
-    loader.load(
-      'assets/heart.glb',
-      (gltf) => {
-        heart = gltf.scene;
-        heart.scale.set(0.5, 0.5, 0.5);
-        heart.position.set(0, 0, 0);
-        scene.add(heart);
-      },
-      undefined,
-      (error) => {
-        console.error('Error loading 3D heart model:', error);
-      }
-    );
+    let heart, bow;
 
-    // Falling Love Notes
+    loader.load('assets/heart.glb', (gltf) => {
+      heart = gltf.scene;
+      heart.scale.set(0.5, 0.5, 0.5);
+      heart.position.set(0, 0, 0);
+      scene.add(heart);
+    });
+
+    loader.load('assets/cupid-bow.glb', (gltf) => {
+      bow = gltf.scene;
+      bow.scale.set(0.3, 0.3, 0.3);
+      bow.position.set(-2, 0, 0);
+      scene.add(bow);
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+    animate();
+
     function createFallingNote() {
       const note = document.createElement('div');
       note.classList.add('love-note');
@@ -133,7 +127,7 @@
       }, 20);
 
       note.addEventListener('click', () => {
-        showPopup(note);
+        showPopup();
       });
     }
 
@@ -142,27 +136,25 @@
     }
     startFallingNotes();
 
-    // Random Love Messages
     const messages = [
-      "I love you! ❤️", "You're my everything! 💖", "You make my world magical! ✨", "Forever and always! 💕", "You're my universe! 🌌"
+      "I love you! ❤️", "You're my everything! 💖", "You make my world magical! ✨", "Forever and always! 💕", "You're my universe! 🌌", "My princess, will you be my Valentine? 💌"
     ];
 
-    function showPopup(note) {
+    function showPopup() {
       const popup = document.getElementById('popup');
       popup.textContent = messages[Math.floor(Math.random() * messages.length)];
       popup.style.display = 'block';
       setTimeout(() => {
         popup.style.display = 'none';
-        note.remove();
       }, 2000);
     }
 
-    // Cupid's Arrow Hits the Heart
-    document.addEventListener('click', (event) => {
-      if (event.target.classList.contains('love-note')) return;
-      document.getElementById('love-letter').style.display = 'block';
+    document.getElementById('bow-container').addEventListener('click', () => {
+      const letter = document.getElementById('love-letter');
+      letter.textContent = messages[messages.length - 1];
+      letter.style.display = 'block';
       setTimeout(() => {
-        document.getElementById('love-letter').style.display = 'none';
+        letter.style.display = 'none';
       }, 4000);
     });
   </script>
